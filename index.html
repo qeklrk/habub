@@ -1,0 +1,1099 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Swole to the Stars</title>
+<style>
+  :root {
+    --bg: #0b0d1a;
+    --panel: #151a30;
+    --panel2: #1d2340;
+    --text: #e9ecff;
+    --muted: #8d94bd;
+    --accent: #ffcf3f;
+    --good: #4ee08a;
+    --bad: #ff5d73;
+    --purple: #a77bff;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px; background: #0f1226; border-bottom: 1px solid #252b50;
+    gap: 12px; flex-wrap: wrap;
+  }
+  header h1 { margin: 0; font-size: 20px; letter-spacing: .5px; }
+  header h1 span { color: var(--accent); }
+  .hdr-btns { display: flex; gap: 6px; }
+  .hdr-btns button {
+    background: var(--panel2); color: var(--text); border: 1px solid #2f3768;
+    border-radius: 8px; padding: 6px 10px; cursor: pointer; font-size: 13px;
+  }
+  .hdr-btns button:hover { background: #283060; }
+  main {
+    display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+    gap: 14px; padding: 14px 16px; max-width: 1200px; margin: 0 auto;
+  }
+  @media (max-width: 820px) { main { grid-template-columns: 1fr; } }
+  .stats {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 10px;
+  }
+  @media (max-width: 520px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+  .stat {
+    background: var(--panel); border-radius: 10px; padding: 8px 10px; border: 1px solid #252b50;
+  }
+  .stat .lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; }
+  .stat .val { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .stat .sub { font-size: 11px; color: var(--muted); }
+  #money { color: var(--good); }
+  #strength { color: var(--accent); }
+  .stage-wrap { position: relative; border-radius: 14px; overflow: hidden; border: 1px solid #252b50; }
+  @media (max-width: 520px) { .stage-label, .combo-label { font-size: 11px; } .stage-label { max-width: calc(100% - 24px); } }
+  canvas#scene { display: block; width: 100%; aspect-ratio: 16 / 10; cursor: pointer; touch-action: manipulation; }
+  .stage-label {
+    position: absolute; top: 10px; left: 12px; background: rgba(0,0,0,.45);
+    padding: 4px 10px; border-radius: 20px; font-size: 13px; pointer-events: none;
+  }
+  .combo-label {
+    position: absolute; bottom: 10px; right: 12px; background: rgba(0,0,0,.45);
+    padding: 4px 10px; border-radius: 20px; font-size: 13px; pointer-events: none; font-weight: 700;
+  }
+  .buff-label {
+    position: absolute; top: 44px; left: 50%; transform: translateX(-50%);
+    background: rgba(167,123,255,.85); padding: 4px 12px; border-radius: 20px;
+    font-size: 13px; font-weight: 700; pointer-events: none; display: none; white-space: nowrap;
+  }
+  #liftBtn {
+    width: 100%; margin-top: 10px; padding: 16px; font-size: 22px; font-weight: 800;
+    border: none; border-radius: 12px; cursor: pointer; color: #1a1300;
+    background: linear-gradient(180deg, #ffe17a, #ffb520);
+    box-shadow: 0 5px 0 #b57a00; letter-spacing: 1px; touch-action: manipulation;
+  }
+  #liftBtn:active { transform: translateY(4px); box-shadow: 0 1px 0 #b57a00; }
+  .hint { text-align: center; color: var(--muted); font-size: 12px; margin-top: 6px; }
+  .progress-box { background: var(--panel); border-radius: 12px; padding: 10px 12px; margin-top: 10px; border: 1px solid #252b50; }
+  .progress-box .row { display: flex; justify-content: space-between; font-size: 13px; gap: 8px; }
+  .bar { height: 12px; background: #0b0e20; border-radius: 6px; overflow: hidden; margin: 6px 0; }
+  .bar > div { height: 100%; width: 0; background: linear-gradient(90deg, var(--purple), #59c8ff); transition: width .2s; }
+  #travelBtn {
+    width: 100%; padding: 10px; border-radius: 10px; border: none; font-weight: 700; font-size: 15px;
+    cursor: pointer; background: linear-gradient(90deg, #7a4cff, #3fb2ff); color: white;
+  }
+  #travelBtn:disabled { background: #2a2f52; color: #6b7199; cursor: not-allowed; }
+  .tabs { display: flex; gap: 6px; margin-bottom: 8px; }
+  .tabs button {
+    flex: 1; padding: 8px; background: var(--panel); color: var(--muted);
+    border: 1px solid #252b50; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 14px;
+  }
+  .tabs button.active { background: var(--panel2); color: var(--text); border-color: #4a54a0; }
+  .shop { display: flex; flex-direction: column; gap: 6px; max-height: calc(100vh - 140px); overflow-y: auto; padding-right: 2px; }
+  @media (max-width: 820px) { .shop { max-height: none; } }
+  .item {
+    display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 10px;
+    background: var(--panel); border: 1px solid #252b50; border-radius: 10px; padding: 8px 10px;
+    cursor: pointer; transition: background .1s, opacity .1s;
+  }
+  .item:hover { background: var(--panel2); }
+  .item.locked { opacity: .45; cursor: not-allowed; }
+  .item.hidden-item { filter: blur(.5px); }
+  .item .ico { font-size: 28px; text-align: center; }
+  .item .name { font-weight: 700; font-size: 14px; }
+  .item .desc { font-size: 12px; color: var(--muted); }
+  .item .right { text-align: right; }
+  .item .cost { font-weight: 700; color: var(--good); font-size: 14px; white-space: nowrap; }
+  .item.locked .cost { color: var(--bad); }
+  .item .owned { font-size: 12px; color: var(--muted); }
+  .item.maxed { opacity: .6; cursor: default; }
+  .item.maxed .cost { color: var(--muted); }
+  .ach { display: grid; grid-template-columns: 34px 1fr; gap: 8px; align-items: center;
+    background: var(--panel); border: 1px solid #252b50; border-radius: 10px; padding: 8px 10px; }
+  .ach.got { border-color: #6a5a1a; background: #231f12; }
+  .ach .ico { font-size: 22px; text-align: center; filter: grayscale(1); opacity: .4; }
+  .ach.got .ico { filter: none; opacity: 1; }
+  .ach .name { font-weight: 700; font-size: 13px; }
+  .ach .desc { font-size: 12px; color: var(--muted); }
+  .rebirth-box { background: linear-gradient(135deg, #2a1650, #10203e); border: 1px solid #5a3aa8; border-radius: 12px; padding: 12px; }
+  .rebirth-box h3 { margin: 0 0 6px; }
+  .rebirth-box p { margin: 6px 0; font-size: 13px; color: #c9c3ef; }
+  .rebirth-box button { width: 100%; padding: 10px; border-radius: 10px; border: none; font-weight: 800; cursor: pointer;
+    background: linear-gradient(90deg, #ff6bd6, #a77bff); color: white; font-size: 15px; margin-top: 6px; }
+  .rebirth-box button:disabled { background: #2a2f52; color: #6b7199; cursor: not-allowed; }
+  #toast {
+    position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%);
+    display: flex; flex-direction: column; gap: 6px; align-items: center; z-index: 50; pointer-events: none;
+    width: calc(100% - 32px); max-width: 420px;
+  }
+  .toast-msg {
+    background: #1f2550; border: 1px solid #4a54a0; padding: 8px 14px; border-radius: 10px; font-size: 14px;
+    animation: toastIn .25s ease-out; box-shadow: 0 6px 20px rgba(0,0,0,.4); text-align: center;
+  }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,.7); display: none; align-items: center; justify-content: center; z-index: 60; padding: 16px; }
+  .modal { background: var(--panel); border: 1px solid #4a54a0; border-radius: 14px; padding: 20px; max-width: 440px; width: 100%; text-align: center; }
+  .modal h2 { margin-top: 0; }
+  .modal p { color: #c9cdf0; line-height: 1.45; }
+  .modal button { padding: 10px 18px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; background: var(--accent); color: #1a1300; font-size: 15px; margin: 4px; }
+  .modal button.secondary { background: var(--panel2); color: var(--text); border: 1px solid #3a4280; }
+</style>
+</head>
+<body>
+<header>
+  <h1>💪 Swole to the <span>Stars</span></h1>
+  <div class="hdr-btns">
+    <button id="muteBtn" title="Toggle sound">🔊</button>
+    <button id="helpBtn">How to play</button>
+    <button id="resetBtn">Reset</button>
+  </div>
+</header>
+
+<main>
+  <section>
+    <div class="stats">
+      <div class="stat"><div class="lbl">Money</div><div class="val" id="money">$0</div><div class="sub" id="mps">$0/s</div></div>
+      <div class="stat"><div class="lbl">Strength</div><div class="val" id="strength">0</div><div class="sub" id="sps">0/s</div></div>
+      <div class="stat"><div class="lbl">Per Lift</div><div class="val" id="perLift">1</div><div class="sub" id="perLiftMoney">$1</div></div>
+      <div class="stat"><div class="lbl">Auto Lifts</div><div class="val" id="autoLifts">0/s</div><div class="sub" id="totalReps">0 reps</div></div>
+    </div>
+
+    <div class="stage-wrap">
+      <canvas id="scene" width="800" height="500"></canvas>
+      <div class="stage-label" id="stageLabel">📍 Mom's Garage</div>
+      <div class="combo-label" id="comboLabel">Combo x1.0</div>
+      <div class="buff-label" id="buffLabel"></div>
+    </div>
+
+    <button id="liftBtn">🏋️ LIFT!</button>
+    <div class="hint">Click, tap, or hold Space. Lift fast to build combo. Grab the ⭐ meteors when they show up!</div>
+
+    <div class="progress-box">
+      <div class="row"><span id="nextName">Next: Local Gym</span><span id="nextReq">0 / 100 strength</span></div>
+      <div class="bar"><div id="nextBar"></div></div>
+      <button id="travelBtn" disabled>Travel</button>
+    </div>
+  </section>
+
+  <section>
+    <div class="tabs">
+      <button data-tab="shop" class="active">🛒 Shop</button>
+      <button data-tab="ach">🏆 Trophies</button>
+      <button data-tab="cosmic">🌌 Cosmic</button>
+    </div>
+    <div class="shop" id="tab-shop"></div>
+    <div class="shop" id="tab-ach" style="display:none"></div>
+    <div class="shop" id="tab-cosmic" style="display:none"></div>
+  </section>
+</main>
+
+<div id="toast"></div>
+
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <h2 id="modalTitle"></h2>
+    <p id="modalBody"></p>
+    <div id="modalBtns"></div>
+  </div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  // ---------- Number formatting ----------
+  const SUFFIX = ['', 'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc', 'Ud', 'Dd', 'Td', 'Qad', 'Qid'];
+  function fmt(n, dec = 1) {
+    if (!isFinite(n)) return '∞';
+    if (n < 0) return '-' + fmt(-n, dec);
+    if (n < 1000) return n < 10 && n % 1 !== 0 ? n.toFixed(1) : Math.floor(n).toString();
+    const tier = Math.floor(Math.log10(n) / 3);
+    if (tier >= SUFFIX.length) return n.toExponential(2);
+    const scaled = n / Math.pow(1000, tier);
+    return scaled.toFixed(scaled < 100 ? dec + (scaled < 10 ? 1 : 0) : 0) + SUFFIX[tier];
+  }
+  const $m = n => '$' + fmt(n);
+  const el = id => document.getElementById(id);
+
+  // ---------- Game data ----------
+  const STAGES = [
+    { name: "Mom's Garage",        req: 0,      cost: 0,      mult: 1,     obj: '🥫', objName: 'soup cans',        sky: ['#3a2e2a', '#5b4636'], ground: '#4a3b30', theme: 'garage' },
+    { name: 'Local Gym',           req: 100,    cost: 50,     mult: 2,     obj: '🏋️', objName: 'a real barbell',   sky: ['#2b3350', '#47557d'], ground: '#3a3f55', theme: 'gym' },
+    { name: 'Pro Competition',     req: 3e3,    cost: 1.5e3,  mult: 5,     obj: '🚗', objName: 'a car',            sky: ['#1b1b3a', '#4b2e6b'], ground: '#2c2c44', theme: 'arena' },
+    { name: 'Mount Everest',       req: 8e4,    cost: 4e4,    mult: 14,    obj: '🪨', objName: 'a boulder',        sky: ['#6aa6e8', '#cfe7ff'], ground: '#e8f0fa', theme: 'mountain' },
+    { name: 'Low Earth Orbit',     req: 2.5e6,  cost: 1.2e6,  mult: 40,    obj: '🛰️', objName: 'a satellite',      sky: ['#000008', '#0a1640'], ground: null,      theme: 'orbit' },
+    { name: 'The Moon',            req: 8e7,    cost: 4e7,    mult: 120,   obj: '🚀', objName: 'a rocket',         sky: ['#000000', '#101020'], ground: '#9a9aa6', theme: 'moon' },
+    { name: 'Mars',                req: 3e9,    cost: 1.5e9,  mult: 400,   obj: '🌑', objName: 'Phobos',           sky: ['#3b1208', '#a0481c'], ground: '#b5532a', theme: 'mars' },
+    { name: 'Jupiter Storm',       req: 1.2e11, cost: 6e10,   mult: 1500,  obj: '🌍', objName: 'the Earth',        sky: ['#3d2a1e', '#c9925c'], ground: null,      theme: 'jupiter' },
+    { name: 'Surface of the Sun',  req: 5e12,   cost: 2.5e12, mult: 6000,  obj: '🪐', objName: 'Saturn',           sky: ['#ff6a00', '#ffd23f'], ground: '#ff9a1f', theme: 'sun' },
+    { name: 'Andromeda — INTERGALACTIC', req: 2e14, cost: 1e14, mult: 25000, obj: '☀️', objName: 'a star',        sky: ['#05001a', '#2a0a55'], ground: null,      theme: 'galaxy' },
+    { name: 'Edge of the Universe', req: 1e16,  cost: 5e15,   mult: 1e5,   obj: '🌌', objName: 'a whole galaxy',  sky: ['#000000', '#1a0030'], ground: null,      theme: 'edge' },
+  ];
+  const INTERGALACTIC_STAGE = 9;
+
+  // type: str (+str per lift), money (+$ per lift), auto (+lifts/sec), strMult, moneyMult, comboMax
+  const UPGRADES = [
+    { id: 'plates',   ico: '🥏', name: 'Heavier Plates',     desc: '+1 strength per lift',           type: 'str',   amt: 1,     base: 10,    scale: 1.15 },
+    { id: 'shake',    ico: '🥤', name: 'Protein Shake',      desc: '+$1 per lift',                   type: 'money', amt: 1,     base: 15,    scale: 1.15 },
+    { id: 'buddy',    ico: '🧍', name: 'Gym Buddy',          desc: '+0.5 auto lifts/sec',            type: 'auto',  amt: 0.5,   base: 60,    scale: 1.15 },
+    { id: 'chalk',    ico: '🧂', name: 'Magic Chalk',        desc: 'Max combo +0.5x',                type: 'combo', amt: 0.5,   base: 300,   scale: 4,    max: 6 },
+    { id: 'pre',      ico: '⚡', name: 'Pre-Workout',        desc: 'Strength x1.25',                 type: 'strMult', amt: 1.25, base: 500, scale: 2.4 },
+    { id: 'belt',     ico: '🥋', name: 'Lifting Belt',       desc: '+8 strength per lift',           type: 'str',   amt: 8,     base: 1100,  scale: 1.15 },
+    { id: 'trainer',  ico: '🧑‍🏫', name: 'Personal Trainer',  desc: '+4 auto lifts/sec',              type: 'auto',  amt: 4,     base: 1300,  scale: 1.15 },
+    { id: 'sponsor',  ico: '📺', name: 'Sponsorship Deal',   desc: 'Money x1.5',                     type: 'moneyMult', amt: 1.5, base: 4000, scale: 2.6 },
+    { id: 'merch',    ico: '👕', name: 'Merch Line',         desc: '+$25 per lift',                  type: 'money', amt: 25,    base: 9000,  scale: 1.15 },
+    { id: 'robot',    ico: '🤖', name: 'Robot Spotter',      desc: '+30 auto lifts/sec',             type: 'auto',  amt: 30,    base: 6e4,   scale: 1.15 },
+    { id: 'gamma',    ico: '☢️', name: 'Gamma Ray Chamber',  desc: 'Strength x2',                    type: 'strMult', amt: 2,   base: 8e5,   scale: 3.2 },
+    { id: 'hydraulic',ico: '🦾', name: 'Hydraulic Arms',     desc: '+500 strength per lift',         type: 'str',   amt: 500,   base: 3e6,   scale: 1.15 },
+    { id: 'clone',    ico: '🧬', name: 'Clone Lab',          desc: '+250 auto lifts/sec',            type: 'auto',  amt: 250,   base: 1.5e7, scale: 1.15 },
+    { id: 'zerog',    ico: '🧑‍🚀', name: 'Zero-G Training',  desc: 'Money x2',                       type: 'moneyMult', amt: 2,  base: 1e8,  scale: 3.5 },
+    { id: 'crypto',   ico: '🪙', name: 'Space Bucks NFT',    desc: '+$40K per lift',                 type: 'money', amt: 4e4,   base: 5e8,   scale: 1.15 },
+    { id: 'blackhole',ico: '🕳️', name: 'Black Hole Barbell', desc: '+50K strength per lift',         type: 'str',   amt: 5e4,   base: 4e9,   scale: 1.15 },
+    { id: 'alien',    ico: '👽', name: 'Alien Coaches',      desc: '+3,000 auto lifts/sec',          type: 'auto',  amt: 3000,  base: 3e10,  scale: 1.15 },
+    { id: 'nebula',   ico: '💫', name: 'Nebula Steroids',    desc: 'Strength x3',                    type: 'strMult', amt: 3,   base: 5e11,  scale: 4 },
+    { id: 'dyson',    ico: '🔆', name: 'Dyson Sphere Gym',   desc: '+40,000 auto lifts/sec',         type: 'auto',  amt: 4e4,   base: 2e13,  scale: 1.15 },
+    { id: 'galactic', ico: '🏦', name: 'Galactic Bank',      desc: 'Money x3',                       type: 'moneyMult', amt: 3,  base: 1e14,  scale: 4.5 },
+  ];
+
+  const COSMIC = [
+    { id: 'c_power',  ico: '🌟', name: 'Stellar Genes',   desc: '+25% strength forever',      cost: 1, scale: 2,  max: 50 },
+    { id: 'c_wealth', ico: '💎', name: 'Cosmic Wallet',   desc: '+25% money forever',         cost: 1, scale: 2,  max: 50 },
+    { id: 'c_auto',   ico: '🛸', name: 'UFO Gym Crew',    desc: 'Start each run with +5 auto lifts/sec (stacks)', cost: 2, scale: 2, max: 20 },
+    { id: 'c_start',  ico: '💰', name: 'Trust Fund',      desc: 'Start each run with $1K × level²', cost: 1, scale: 3, max: 10 },
+    { id: 'c_meteor', ico: '☄️', name: 'Meteor Magnet',   desc: 'Meteors appear 15% more often', cost: 3, scale: 2.5, max: 5 },
+  ];
+
+  const ACHIEVEMENTS = [
+    { id: 'rep1',     ico: '👶', name: 'First Rep',            desc: 'Lift once',                        test: s => s.reps >= 1 },
+    { id: 'rep100',   ico: '💪', name: 'Getting Pumped',       desc: '100 reps',                         test: s => s.reps >= 100 },
+    { id: 'rep1k',    ico: '🔥', name: 'Rep Machine',          desc: '1,000 reps',                       test: s => s.reps >= 1000 },
+    { id: 'rep100k',  ico: '🌀', name: 'Infinite Set',         desc: '100,000 reps',                     test: s => s.reps >= 1e5 },
+    { id: 'combo',    ico: '🎯', name: 'Combo Breaker',        desc: 'Hit max combo',                    test: s => s.combo >= comboMax() - 0.01 && s.reps > 5 },
+    { id: 'money1m',  ico: '💵', name: 'Millionaire Muscles',  desc: 'Have $1M at once',                 test: s => s.money >= 1e6 },
+    { id: 'money1t',  ico: '🤑', name: 'Trillionaire Traps',   desc: 'Have $1T at once',                 test: s => s.money >= 1e12 },
+    { id: 'gym',      ico: '🏢', name: 'Membership Card',      desc: 'Reach the Local Gym',              test: s => s.stage >= 1 },
+    { id: 'everest',  ico: '🏔️', name: 'Peak Performance',     desc: 'Lift on Mount Everest',            test: s => s.stage >= 3 },
+    { id: 'space',    ico: '🛰️', name: 'Houston, We Have Gains', desc: 'Reach orbit',                    test: s => s.stage >= 4 },
+    { id: 'moon',     ico: '🌕', name: 'Moon Pump',            desc: 'Reach the Moon',                   test: s => s.stage >= 5 },
+    { id: 'sun',      ico: '🌞', name: 'Hot Bod',              desc: 'Lift on the Sun',                  test: s => s.stage >= 8 },
+    { id: 'inter',    ico: '🌌', name: 'INTERGALACTIC',        desc: 'Become intergalactic',             test: s => s.stage >= INTERGALACTIC_STAGE },
+    { id: 'edge',     ico: '🔚', name: 'Nowhere Left to Lift', desc: 'Reach the Edge of the Universe',   test: s => s.stage >= 10 },
+    { id: 'meteor',   ico: '☄️', name: 'Star Catcher',         desc: 'Catch a meteor',                   test: s => s.meteorsCaught >= 1 },
+    { id: 'meteor25', ico: '🌠', name: 'Meteor Shower',        desc: 'Catch 25 meteors',                 test: s => s.meteorsCaught >= 25 },
+    { id: 'rebirth',  ico: '💥', name: 'Big Bang Theory',      desc: 'Do a Big Bang rebirth',            test: s => s.rebirths >= 1 },
+    { id: 'robots',   ico: '🤖', name: 'Robot Uprising',       desc: 'Own 25 Robot Spotters',            test: s => (s.owned.robot || 0) >= 25 },
+  ];
+
+  // ---------- State ----------
+  const SAVE_KEY = 'swole-to-the-stars-v1';
+  function freshRun(keep) {
+    const cosmic = keep ? keep.cosmic : {};
+    const startCash = Math.pow(cosmic.c_start || 0, 2) * 1000;
+    return {
+      money: startCash,
+      strength: 0,
+      reps: keep ? keep.reps : 0,
+      totalStrength: keep ? keep.totalStrength : 0,
+      runStrength: 0,
+      stage: 0,
+      owned: {},
+      combo: 1,
+      lastLift: 0,
+      stardust: keep ? keep.stardust : 0,
+      cosmic: cosmic,
+      rebirths: keep ? keep.rebirths : 0,
+      ach: keep ? keep.ach : {},
+      meteorsCaught: keep ? keep.meteorsCaught : 0,
+      muted: keep ? keep.muted : false,
+      seenIntergalactic: keep ? keep.seenIntergalactic : false,
+      lastSave: Date.now(),
+    };
+  }
+  let S = freshRun();
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(SAVE_KEY);
+      if (!raw) return false;
+      const data = JSON.parse(raw);
+      S = Object.assign(freshRun(), data);
+      S.combo = 1;
+      return true;
+    } catch (e) { return false; }
+  }
+  function save() {
+    S.lastSave = Date.now();
+    try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) {}
+  }
+
+  // ---------- Derived stats ----------
+  const owned = id => S.owned[id] || 0;
+  const cosmicLvl = id => S.cosmic[id] || 0;
+
+  function comboMax() {
+    let m = 2;
+    UPGRADES.forEach(u => { if (u.type === 'combo') m += u.amt * owned(u.id); });
+    return m;
+  }
+  let buff = null; // {kind, mult, until}
+  function buffMult(kind) { return buff && buff.kind === kind && performance.now() < buff.until ? buff.mult : 1; }
+
+  function strPerLift() {
+    let base = 1;
+    let mult = 1;
+    UPGRADES.forEach(u => {
+      const n = owned(u.id);
+      if (!n) return;
+      if (u.type === 'str') base += u.amt * n;
+      if (u.type === 'strMult') mult *= Math.pow(u.amt, n);
+    });
+    mult *= 1 + 0.25 * cosmicLvl('c_power');
+    mult *= 1 + 0.1 * S.stardust;
+    return base * mult * buffMult('frenzy');
+  }
+  function moneyPerLift() {
+    let base = 1;
+    let mult = 1;
+    UPGRADES.forEach(u => {
+      const n = owned(u.id);
+      if (!n) return;
+      if (u.type === 'money') base += u.amt * n;
+      if (u.type === 'moneyMult') mult *= Math.pow(u.amt, n);
+    });
+    mult *= STAGES[S.stage].mult;
+    mult *= 1 + 0.25 * cosmicLvl('c_wealth');
+    mult *= 1 + 0.1 * S.stardust;
+    return base * mult * buffMult('frenzy');
+  }
+  function autoLifts() {
+    let a = 5 * cosmicLvl('c_auto');
+    UPGRADES.forEach(u => { if (u.type === 'auto') a += u.amt * owned(u.id); });
+    return a;
+  }
+  function upgradeCost(u) {
+    return Math.ceil(u.base * Math.pow(u.scale, owned(u.id)));
+  }
+  function cosmicCost(c) {
+    return Math.ceil(c.cost * Math.pow(c.scale, cosmicLvl(c.id)));
+  }
+  function stardustOnRebirth() {
+    if (S.stage < INTERGALACTIC_STAGE) return 0;
+    return Math.max(1, Math.floor(Math.pow(S.runStrength / 1e13, 0.4)));
+  }
+
+  // ---------- Audio ----------
+  let actx = null;
+  function beep(freq, dur = 0.08, type = 'square', vol = 0.05) {
+    if (S.muted) return;
+    try {
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      const o = actx.createOscillator();
+      const g = actx.createGain();
+      o.type = type; o.frequency.value = freq;
+      g.gain.setValueAtTime(vol, actx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + dur);
+      o.connect(g); g.connect(actx.destination);
+      o.start(); o.stop(actx.currentTime + dur);
+    } catch (e) {}
+  }
+  function fanfare() {
+    [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => beep(f, 0.18, 'triangle', 0.08), i * 110));
+  }
+
+  // ---------- Lifting ----------
+  let liftAnim = 0; // 0..1 phase of manual lift animation
+  let floaters = [];
+  let particles = [];
+
+  function lift(manual, x, y) {
+    const now = performance.now();
+    if (manual) {
+      if (now - S.lastLift < 650) S.combo = Math.min(comboMax(), S.combo + 0.08);
+      S.lastLift = now;
+      liftAnim = 1;
+      beep(180 + S.combo * 60, 0.05, 'square', 0.035);
+    }
+    const c = manual ? S.combo : 1;
+    const str = strPerLift() * c;
+    const mon = moneyPerLift() * c;
+    gain(str, mon);
+    S.reps++;
+    if (manual) {
+      const W = canvas.width, H = canvas.height;
+      const fx = x != null ? x : W / 2 + (Math.random() - 0.5) * 120;
+      const fy = y != null ? y : H * 0.35;
+      floaters.push({ x: fx, y: fy, text: '+' + fmt(str) + ' 💪', color: '#ffcf3f', life: 1 });
+      floaters.push({ x: fx + 10, y: fy + 24, text: '+' + $m(mon), color: '#4ee08a', life: 1 });
+      for (let i = 0; i < 6; i++) {
+        particles.push({ x: W / 2, y: H * 0.42, vx: (Math.random() - 0.5) * 6, vy: -Math.random() * 5 - 1, life: 1, color: STAGES[S.stage].theme === 'sun' ? '#fff' : '#ffd86b' });
+      }
+    }
+  }
+  function gain(str, mon) {
+    S.strength += str;
+    S.runStrength += str;
+    S.totalStrength += str;
+    S.money += mon;
+  }
+
+  // ---------- Shop UI ----------
+  const shopEl = el('tab-shop');
+  const achEl = el('tab-ach');
+  const cosmicEl = el('tab-cosmic');
+
+  function buildShop() {
+    shopEl.innerHTML = '';
+    UPGRADES.forEach(u => {
+      const d = document.createElement('div');
+      d.className = 'item';
+      d.dataset.id = u.id;
+      d.innerHTML = `<div class="ico">${u.ico}</div>
+        <div><div class="name">${u.name}</div><div class="desc">${u.desc}</div></div>
+        <div class="right"><div class="cost"></div><div class="owned"></div></div>`;
+      d.addEventListener('click', () => buyUpgrade(u));
+      shopEl.appendChild(d);
+      u.el = d;
+    });
+  }
+  function buyUpgrade(u) {
+    if (u.max && owned(u.id) >= u.max) return;
+    const cost = upgradeCost(u);
+    if (S.money < cost) { beep(110, 0.1, 'sawtooth', 0.03); return; }
+    S.money -= cost;
+    S.owned[u.id] = owned(u.id) + 1;
+    beep(660, 0.07, 'triangle', 0.06); beep(990, 0.09, 'triangle', 0.04);
+    refreshShop(); refreshStats(); refreshTravel();
+  }
+  function refreshShop() {
+    // Show upgrades up to 2 beyond the last affordable/owned one
+    let reveal = 0;
+    UPGRADES.forEach((u, i) => { if (owned(u.id) > 0 || S.money >= u.base * 0.5) reveal = i; });
+    UPGRADES.forEach((u, i) => {
+      const d = u.el;
+      const hidden = i > reveal + 2;
+      d.style.display = hidden ? 'none' : '';
+      if (hidden) return;
+      const mystery = i > reveal;
+      const isMax = u.max && owned(u.id) >= u.max;
+      const cost = upgradeCost(u);
+      d.querySelector('.name').textContent = mystery ? '???' : u.name;
+      d.querySelector('.desc').textContent = mystery ? 'Keep lifting to discover' : u.desc;
+      d.querySelector('.ico').textContent = mystery ? '❔' : u.ico;
+      d.querySelector('.cost').textContent = isMax ? 'MAX' : $m(cost);
+      d.querySelector('.owned').textContent = owned(u.id) ? 'Owned: ' + owned(u.id) : '';
+      d.classList.toggle('locked', !isMax && S.money < cost);
+      d.classList.toggle('maxed', !!isMax);
+    });
+  }
+
+  function buildAch() {
+    achEl.innerHTML = '';
+    ACHIEVEMENTS.forEach(a => {
+      const d = document.createElement('div');
+      d.className = 'ach';
+      d.innerHTML = `<div class="ico">${a.ico}</div><div><div class="name">${a.name}</div><div class="desc">${a.desc}</div></div>`;
+      achEl.appendChild(d);
+      a.el = d;
+    });
+  }
+  function refreshAch() {
+    let got = 0;
+    ACHIEVEMENTS.forEach(a => {
+      if (!S.ach[a.id] && a.test(S)) {
+        S.ach[a.id] = true;
+        toast(`🏆 Trophy unlocked: <b>${a.name}</b>`);
+        beep(880, 0.12, 'triangle', 0.06);
+      }
+      if (S.ach[a.id]) got++;
+      a.el.classList.toggle('got', !!S.ach[a.id]);
+    });
+    document.querySelector('[data-tab="ach"]').textContent = `🏆 Trophies ${got}/${ACHIEVEMENTS.length}`;
+  }
+
+  function buildCosmic() {
+    cosmicEl.innerHTML = `
+      <div class="rebirth-box">
+        <h3>💥 Big Bang Rebirth</h3>
+        <p>Once you're <b>intergalactic</b> (reach Andromeda), you can collapse the universe and start over.
+        You keep trophies and earn <b>Stardust ✨</b> — each one permanently boosts strength & money by +10%, and you can spend it below.</p>
+        <p>Stardust: <b id="stardustVal">0</b> &nbsp;·&nbsp; Unspent: <b id="stardustFree">0</b> &nbsp;·&nbsp; Rebirths: <b id="rebirthVal">0</b></p>
+        <button id="rebirthBtn" disabled>Reach Andromeda to unlock</button>
+      </div>`;
+    COSMIC.forEach(c => {
+      const d = document.createElement('div');
+      d.className = 'item';
+      d.innerHTML = `<div class="ico">${c.ico}</div>
+        <div><div class="name">${c.name}</div><div class="desc">${c.desc}</div></div>
+        <div class="right"><div class="cost"></div><div class="owned"></div></div>`;
+      d.addEventListener('click', () => buyCosmic(c));
+      cosmicEl.appendChild(d);
+      c.el = d;
+    });
+    el('rebirthBtn').addEventListener('click', confirmRebirth);
+  }
+  function stardustSpent() {
+    let spent = 0;
+    COSMIC.forEach(c => { for (let i = 0; i < cosmicLvl(c.id); i++) spent += Math.ceil(c.cost * Math.pow(c.scale, i)); });
+    return spent;
+  }
+  const stardustFree = () => S.stardust - stardustSpent();
+  function buyCosmic(c) {
+    if (cosmicLvl(c.id) >= c.max) return;
+    const cost = cosmicCost(c);
+    if (stardustFree() < cost) { beep(110, 0.1, 'sawtooth', 0.03); return; }
+    S.cosmic[c.id] = cosmicLvl(c.id) + 1;
+    beep(1200, 0.12, 'sine', 0.06);
+    refreshCosmic();
+  }
+  function refreshCosmic() {
+    el('stardustVal').textContent = fmt(S.stardust);
+    el('stardustFree').textContent = fmt(stardustFree());
+    el('rebirthVal').textContent = S.rebirths;
+    const sd = stardustOnRebirth();
+    const btn = el('rebirthBtn');
+    btn.disabled = sd <= 0;
+    btn.textContent = sd > 0 ? `BIG BANG! (+${fmt(sd)} ✨ Stardust)` : 'Reach Andromeda to unlock';
+    const free = stardustFree();
+    COSMIC.forEach(c => {
+      const lvl = cosmicLvl(c.id);
+      const isMax = lvl >= c.max;
+      const cost = cosmicCost(c);
+      c.el.querySelector('.cost').textContent = isMax ? 'MAX' : cost + ' ✨';
+      c.el.querySelector('.owned').textContent = 'Lvl ' + lvl;
+      c.el.classList.toggle('locked', !isMax && free < cost);
+      c.el.classList.toggle('maxed', isMax);
+    });
+  }
+  function confirmRebirth() {
+    const sd = stardustOnRebirth();
+    if (sd <= 0) return;
+    modal('💥 Big Bang?', `You'll lose your money, strength, upgrades and location, but gain <b>${fmt(sd)} Stardust ✨</b> (permanent +${sd * 10}% boost, plus cosmic upgrades). Trophies are kept.`, [
+      { text: 'Do it! 💥', fn: () => {
+        const keep = S;
+        keep.stardust += sd;
+        keep.rebirths++;
+        S = freshRun(keep);
+        buff = null;
+        fanfare();
+        toast(`💥 The universe is reborn. You have ${fmt(S.stardust)} Stardust.`);
+        refreshAll();
+        save();
+      }},
+      { text: 'Not yet', secondary: true },
+    ]);
+  }
+
+  // ---------- Travel ----------
+  el('travelBtn').addEventListener('click', () => {
+    const next = STAGES[S.stage + 1];
+    if (!next) return;
+    if (S.strength < next.req || S.money < next.cost) return;
+    S.money -= next.cost;
+    S.stage++;
+    fanfare();
+    flash = 1;
+    toast(`🚀 Welcome to <b>${next.name}</b>! Money x${fmt(next.mult)}. Now lifting ${next.objName}.`);
+    if (S.stage === INTERGALACTIC_STAGE && !S.seenIntergalactic) {
+      S.seenIntergalactic = true;
+      setTimeout(() => modal('🌌 YOU ARE INTERGALACTIC 🌌',
+        `From soup cans in your mom's garage to bench-pressing stars in Andromeda. Your muscles now have their own gravitational pull.<br><br>
+        Keep going to the <b>Edge of the Universe</b>, or open the <b>🌌 Cosmic</b> tab to do a <b>Big Bang</b> rebirth for permanent Stardust boosts.`,
+        [{ text: 'LET\'S GOOO 💪' }]), 400);
+    }
+    if (S.stage === STAGES.length - 1) {
+      setTimeout(() => modal('🔚 The Edge of the Universe',
+        'There is nothing left to lift... except the universe itself. Time for a Big Bang?',
+        [{ text: 'Cosmic tab', fn: () => switchTab('cosmic') }, { text: 'Keep lifting', secondary: true }]), 400);
+    }
+    refreshAll();
+  });
+
+  function refreshTravel() {
+    const next = STAGES[S.stage + 1];
+    const btn = el('travelBtn');
+    if (!next) {
+      el('nextName').textContent = 'You reached the end of everything.';
+      el('nextReq').textContent = '';
+      el('nextBar').style.width = '100%';
+      btn.disabled = true;
+      btn.textContent = '🌌 Maxed out — try a Big Bang';
+      return;
+    }
+    const prevReq = STAGES[S.stage].req;
+    const pct = Math.max(0, Math.min(1, (Math.log10(S.strength + 1) - Math.log10(prevReq + 1)) / (Math.log10(next.req + 1) - Math.log10(prevReq + 1))));
+    el('nextName').textContent = 'Next: ' + next.name;
+    el('nextReq').textContent = fmt(S.strength) + ' / ' + fmt(next.req) + ' 💪';
+    el('nextBar').style.width = (S.strength >= next.req ? 100 : pct * 100) + '%';
+    const ready = S.strength >= next.req;
+    btn.disabled = !ready || S.money < next.cost;
+    btn.textContent = ready
+      ? (S.money >= next.cost ? `🚀 Travel to ${next.name} (${$m(next.cost)})` : `Need ${$m(next.cost)} for the trip`)
+      : `Need ${fmt(next.req)} strength`;
+  }
+
+  // ---------- Stats UI ----------
+  let lastMoney = 0, lastStr = 0, mpsAvg = 0, spsAvg = 0;
+  function refreshStats() {
+    el('money').textContent = $m(S.money);
+    el('strength').textContent = fmt(S.strength);
+    el('perLift').textContent = '+' + fmt(strPerLift());
+    el('perLiftMoney').textContent = '+' + $m(moneyPerLift());
+    el('autoLifts').textContent = fmt(autoLifts()) + '/s';
+    el('totalReps').textContent = fmt(S.reps) + ' reps';
+    el('mps').textContent = $m(mpsAvg) + '/s';
+    el('sps').textContent = fmt(spsAvg) + '/s';
+    el('stageLabel').textContent = '📍 ' + STAGES[S.stage].name + '  ·  lifting ' + STAGES[S.stage].objName;
+    el('comboLabel').textContent = 'Combo x' + S.combo.toFixed(2);
+    el('comboLabel').style.color = S.combo >= comboMax() - 0.01 ? '#ff6bd6' : S.combo > 1.5 ? '#ffcf3f' : '#e9ecff';
+    const bl = el('buffLabel');
+    if (buff && performance.now() < buff.until) {
+      bl.style.display = 'block';
+      bl.textContent = `☄️ METEOR FRENZY x${buff.mult} — ${Math.ceil((buff.until - performance.now()) / 1000)}s`;
+    } else { bl.style.display = 'none'; buff = null; }
+  }
+  function refreshAll() {
+    refreshStats(); refreshShop(); refreshTravel(); refreshAch(); refreshCosmic();
+  }
+
+  // ---------- Toast / Modal ----------
+  function toast(html) {
+    const t = document.createElement('div');
+    t.className = 'toast-msg';
+    t.innerHTML = html;
+    el('toast').appendChild(t);
+    setTimeout(() => t.remove(), 3500);
+    while (el('toast').children.length > 4) el('toast').firstChild.remove();
+  }
+  function modal(title, body, btns) {
+    el('modalTitle').innerHTML = title;
+    el('modalBody').innerHTML = body;
+    const b = el('modalBtns');
+    b.innerHTML = '';
+    btns.forEach(o => {
+      const bt = document.createElement('button');
+      bt.innerHTML = o.text;
+      if (o.secondary) bt.className = 'secondary';
+      bt.onclick = () => { el('modal').style.display = 'none'; o.fn && o.fn(); };
+      b.appendChild(bt);
+    });
+    el('modal').style.display = 'flex';
+  }
+
+  // ---------- Tabs ----------
+  function switchTab(name) {
+    document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+    ['shop', 'ach', 'cosmic'].forEach(t => el('tab-' + t).style.display = t === name ? '' : 'none');
+  }
+  document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
+
+  // ---------- Canvas scene ----------
+  const canvas = el('scene');
+  const ctx = canvas.getContext('2d');
+  let flash = 0;
+  const stars = Array.from({ length: 140 }, () => ({ x: Math.random(), y: Math.random(), s: Math.random() * 1.8 + 0.3, t: Math.random() * 6 }));
+  let meteor = null;
+  let nextMeteor = performance.now() + 20000 + Math.random() * 25000;
+
+  function scheduleMeteor() {
+    const f = Math.pow(0.85, cosmicLvl('c_meteor'));
+    nextMeteor = performance.now() + (30000 + Math.random() * 60000) * f;
+  }
+
+  function canvasPos(e) {
+    const r = canvas.getBoundingClientRect();
+    return { x: (e.clientX - r.left) * canvas.width / r.width, y: (e.clientY - r.top) * canvas.height / r.height };
+  }
+
+  canvas.addEventListener('pointerdown', e => {
+    const p = canvasPos(e);
+    if (meteor && Math.hypot(p.x - meteor.x, p.y - meteor.y) < 45) { catchMeteor(); return; }
+    lift(true, p.x, p.y);
+  });
+
+  function catchMeteor() {
+    S.meteorsCaught++;
+    const r = Math.random();
+    meteor = null;
+    scheduleMeteor();
+    fanfare();
+    if (r < 0.5) {
+      const amt = Math.max(moneyPerLift() * Math.max(autoLifts(), 3) * 60, 50);
+      S.money += amt;
+      toast(`☄️ Meteor of Wealth! +${$m(amt)}`);
+    } else if (r < 0.85) {
+      buff = { kind: 'frenzy', mult: 7, until: performance.now() + 15000 };
+      toast('☄️ METEOR FRENZY! Everything x7 for 15s!');
+    } else {
+      const amt = Math.max(strPerLift() * Math.max(autoLifts(), 3) * 90, 50);
+      S.strength += amt; S.runStrength += amt; S.totalStrength += amt;
+      toast(`☄️ Meteor of Might! +${fmt(amt)} strength`);
+    }
+  }
+
+  function muscleSize() {
+    // 0..1 growth based on log strength
+    return Math.min(1, Math.log10(S.strength + 10) / 17);
+  }
+
+  function drawBackground(t) {
+    const W = canvas.width, H = canvas.height;
+    const st = STAGES[S.stage];
+    const g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, st.sky[0]); g.addColorStop(1, st.sky[1]);
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+
+    const theme = st.theme;
+    const space = ['orbit', 'moon', 'galaxy', 'edge', 'jupiter', 'mars'].includes(theme);
+    if (space || theme === 'arena') {
+      stars.forEach(s => {
+        const a = 0.4 + 0.6 * Math.abs(Math.sin(t / 900 + s.t));
+        ctx.fillStyle = `rgba(255,255,255,${theme === 'mars' || theme === 'jupiter' ? a * 0.35 : a})`;
+        ctx.fillRect(s.x * W, s.y * H * 0.85, s.s, s.s);
+      });
+    }
+
+    if (theme === 'garage') {
+      ctx.fillStyle = '#2a211c'; ctx.fillRect(0, 0, W, 60);
+      for (let i = 0; i < 8; i++) { ctx.fillStyle = i % 2 ? '#4b3a2f' : '#43342a'; ctx.fillRect(40 + i * 92, 70, 80, 14); }
+      ctx.fillStyle = '#6b5a4a'; ctx.fillRect(60, 130, 120, 180); // shelf
+      ctx.fillStyle = '#88705a'; for (let i = 0; i < 4; i++) ctx.fillRect(60, 140 + i * 45, 120, 6);
+      ctx.font = '26px serif'; ctx.fillText('📦', 80, 175); ctx.fillText('🧰', 120, 220); ctx.fillText('🪣', 85, 265);
+      ctx.fillText('🚲', 640, 300);
+    } else if (theme === 'gym') {
+      ctx.fillStyle = '#2d3550'; ctx.fillRect(0, 60, W, 230);
+      ctx.fillStyle = '#7d8bc7'; for (let i = 0; i < 5; i++) ctx.fillRect(30 + i * 160, 90, 110, 120);
+      ctx.fillStyle = '#c9d3ff22'; for (let i = 0; i < 5; i++) ctx.fillRect(36 + i * 160, 96, 98, 108);
+      ctx.fillStyle = '#ffcf3f'; ctx.font = 'bold 22px system-ui'; ctx.fillText('NO PAIN NO GAIN', W / 2 - 100, 45);
+    } else if (theme === 'arena') {
+      for (let i = 0; i < 5; i++) {
+        const x = 80 + i * 160;
+        const grd = ctx.createRadialGradient(x, 0, 5, x, 0, 300);
+        grd.addColorStop(0, 'rgba(255,240,180,0.35)'); grd.addColorStop(1, 'rgba(255,240,180,0)');
+        ctx.fillStyle = grd; ctx.beginPath(); ctx.moveTo(x - 10, 0); ctx.lineTo(x - 120, H); ctx.lineTo(x + 120, H); ctx.lineTo(x + 10, 0); ctx.fill();
+      }
+      ctx.fillStyle = '#121226';
+      for (let i = 0; i < 40; i++) { const x = i * 21; const bob = Math.sin(t / 200 + i) * 3; ctx.beginPath(); ctx.arc(x, 300 + bob, 10, 0, Math.PI * 2); ctx.fill(); ctx.fillRect(x - 10, 300 + bob, 20, 30); }
+    } else if (theme === 'mountain') {
+      ctx.fillStyle = '#8fa6c4';
+      ctx.beginPath(); ctx.moveTo(0, 360); ctx.lineTo(150, 180); ctx.lineTo(260, 300); ctx.lineTo(420, 120); ctx.lineTo(560, 280); ctx.lineTo(700, 170); ctx.lineTo(W, 330); ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.beginPath(); ctx.moveTo(420, 120); ctx.lineTo(380, 175); ctx.lineTo(420, 160); ctx.lineTo(460, 178); ctx.fill();
+      ctx.font = '40px serif'; ctx.fillText('🚩', 405, 125);
+      for (let i = 0; i < 40; i++) { ctx.fillStyle = 'rgba(255,255,255,.8)'; ctx.fillRect((i * 97 + t / 10) % W, (i * 53 + t / 6) % H, 3, 3); }
+    } else if (theme === 'orbit') {
+      const ex = W / 2, ey = H + 380;
+      const eg = ctx.createRadialGradient(ex, ey, 300, ex, ey, 560);
+      eg.addColorStop(0, '#1f6fd1'); eg.addColorStop(0.92, '#4aa8ff'); eg.addColorStop(1, 'rgba(120,200,255,0)');
+      ctx.fillStyle = eg; ctx.beginPath(); ctx.arc(ex, ey, 560, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#2f9e44'; ctx.beginPath(); ctx.ellipse(ex - 120, ey - 470, 90, 30, 0.2, 0, Math.PI * 2); ctx.fill();
+    } else if (theme === 'moon') {
+      ctx.font = '70px serif'; ctx.fillText('🌍', 620, 110);
+    } else if (theme === 'mars') {
+      ctx.fillStyle = '#8a3a1a';
+      ctx.beginPath(); ctx.moveTo(0, 340); ctx.quadraticCurveTo(200, 250, 380, 330); ctx.quadraticCurveTo(560, 260, W, 320); ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.fill();
+      ctx.font = '36px serif'; ctx.fillText('🤖', 650, 350);
+    } else if (theme === 'jupiter') {
+      for (let i = 0; i < 9; i++) {
+        ctx.fillStyle = i % 2 ? 'rgba(160,100,60,.45)' : 'rgba(240,200,150,.35)';
+        const y = i * 60 + Math.sin(t / 1500 + i) * 8;
+        ctx.fillRect(0, y, W, 34);
+      }
+      ctx.fillStyle = 'rgba(190,70,40,.8)'; ctx.beginPath(); ctx.ellipse(640, 320, 80 + Math.sin(t / 700) * 4, 40, 0, 0, Math.PI * 2); ctx.fill();
+    } else if (theme === 'sun') {
+      for (let i = 0; i < 6; i++) {
+        const x = (i * 150 + t / 20) % (W + 100) - 50;
+        ctx.strokeStyle = 'rgba(255,255,200,.5)'; ctx.lineWidth = 6;
+        ctx.beginPath(); ctx.arc(x, 380, 60 + i * 5, Math.PI, 0); ctx.stroke();
+      }
+    } else if (theme === 'galaxy' || theme === 'edge') {
+      ctx.save(); ctx.translate(W * 0.75, H * 0.3); ctx.rotate(t / 8000);
+      for (let i = 0; i < 300; i++) {
+        const a = i * 0.25, r = i * 0.6;
+        ctx.fillStyle = `hsla(${280 + i / 3}, 90%, 75%, ${1 - i / 300})`;
+        ctx.fillRect(Math.cos(a) * r, Math.sin(a) * r * 0.5, 2, 2);
+        ctx.fillRect(-Math.cos(a) * r, -Math.sin(a) * r * 0.5, 2, 2);
+      }
+      ctx.restore();
+      if (theme === 'edge') {
+        ctx.strokeStyle = `rgba(255,255,255,${0.2 + 0.1 * Math.sin(t / 300)})`; ctx.lineWidth = 2;
+        ctx.strokeRect(10, 10, W - 20, H - 20);
+      }
+    }
+
+    // Floor / platform
+    const groundY = H * 0.78;
+    if (st.ground) {
+      ctx.fillStyle = st.ground; ctx.fillRect(0, groundY, W, H - groundY);
+      if (theme === 'moon') { ctx.fillStyle = '#7d7d88'; [[120, 420, 30], [600, 450, 22], [420, 470, 14]].forEach(([x, y, r]) => { ctx.beginPath(); ctx.ellipse(x, y, r, r / 3, 0, 0, Math.PI * 2); ctx.fill(); }); }
+    } else {
+      // floating platform
+      ctx.fillStyle = theme === 'jupiter' ? '#5a4a3a' : '#2b2f55';
+      ctx.beginPath(); ctx.ellipse(W / 2, groundY + 6, 150, 18, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = 'rgba(120,180,255,.5)';
+      ctx.beginPath(); ctx.ellipse(W / 2, groundY + 18, 120 + Math.sin(t / 200) * 6, 8, 0, 0, Math.PI * 2); ctx.fill();
+    }
+    return groundY;
+  }
+
+  function drawLifter(t, groundY) {
+    const W = canvas.width;
+    const cx = W / 2;
+    const m = muscleSize();
+    const scale = 1 + m * 0.35;
+    // lift phase: auto lifters create a gentle continuous bob; manual click gives a full press
+    const autoPhase = autoLifts() > 0 ? (Math.sin(t / Math.max(90, 600 - autoLifts() * 2)) + 1) / 2 * 0.35 : 0;
+    const phase = Math.max(liftAnim, autoPhase);
+    const skin = S.stage >= 9 ? '#9ff2ff' : S.stage >= 4 ? '#ffd2a8' : '#f2c194';
+    const glow = S.stage >= 5;
+
+    ctx.save();
+    ctx.translate(cx, groundY);
+    ctx.scale(scale, scale);
+
+    if (glow) {
+      const gg = ctx.createRadialGradient(0, -110, 10, 0, -110, 170);
+      gg.addColorStop(0, S.stage >= 9 ? 'rgba(180,120,255,.45)' : 'rgba(255,220,120,.35)');
+      gg.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = gg; ctx.beginPath(); ctx.arc(0, -110, 170, 0, Math.PI * 2); ctx.fill();
+    }
+
+    const legW = 14 + m * 12;
+    const torsoW = 34 + m * 34;
+    const armW = 10 + m * 14;
+    const hipY = -70, shoulderY = -150, headY = -175;
+
+    // legs
+    ctx.fillStyle = '#2a3a8a';
+    ctx.beginPath(); ctx.roundRect(-torsoW / 2 + 2, hipY, legW, 70, 6); ctx.fill();
+    ctx.beginPath(); ctx.roundRect(torsoW / 2 - legW - 2, hipY, legW, 70, 6); ctx.fill();
+    // shoes
+    ctx.fillStyle = '#eee';
+    ctx.fillRect(-torsoW / 2 - 4, -8, legW + 10, 8); ctx.fillRect(torsoW / 2 - legW - 6, -8, legW + 10, 8);
+    // shorts
+    ctx.fillStyle = '#d43c5a';
+    ctx.beginPath(); ctx.roundRect(-torsoW / 2, hipY - 4, torsoW, 34, 6); ctx.fill();
+    // torso (V shape)
+    ctx.fillStyle = skin;
+    ctx.beginPath();
+    ctx.moveTo(-torsoW / 2 - m * 14, shoulderY);
+    ctx.lineTo(torsoW / 2 + m * 14, shoulderY);
+    ctx.lineTo(torsoW / 2, hipY);
+    ctx.lineTo(-torsoW / 2, hipY);
+    ctx.closePath(); ctx.fill();
+    // tank top
+    ctx.fillStyle = S.stage >= 9 ? '#6b2bd9' : '#1b1b1b';
+    ctx.beginPath();
+    ctx.moveTo(-torsoW / 2 + 4, shoulderY + 10); ctx.lineTo(-6, shoulderY + 30); ctx.lineTo(6, shoulderY + 30); ctx.lineTo(torsoW / 2 - 4, shoulderY + 10);
+    ctx.lineTo(torsoW / 2, hipY); ctx.lineTo(-torsoW / 2, hipY); ctx.closePath(); ctx.fill();
+    // pecs/abs hint
+    if (m > 0.3) {
+      ctx.strokeStyle = 'rgba(0,0,0,.25)'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(0, shoulderY + 30); ctx.lineTo(0, hipY - 6); ctx.stroke();
+    }
+    // head
+    ctx.fillStyle = skin;
+    ctx.beginPath(); ctx.arc(0, headY, 20, 0, Math.PI * 2); ctx.fill();
+    // headband
+    ctx.fillStyle = '#ff3b6b'; ctx.fillRect(-20, headY - 10, 40, 6);
+    // face
+    ctx.fillStyle = '#222';
+    const strain = phase > 0.5;
+    if (strain) { ctx.fillRect(-9, headY - 1, 6, 2); ctx.fillRect(3, headY - 1, 6, 2); }
+    else { ctx.beginPath(); ctx.arc(-6, headY, 2.5, 0, Math.PI * 2); ctx.arc(6, headY, 2.5, 0, Math.PI * 2); ctx.fill(); }
+    ctx.beginPath();
+    if (strain) { ctx.fillRect(-6, headY + 8, 12, 4); } else { ctx.arc(0, headY + 7, 6, 0.15 * Math.PI, 0.85 * Math.PI); ctx.lineWidth = 2; ctx.strokeStyle = '#222'; ctx.stroke(); }
+    if (S.stage >= 4) { ctx.font = '18px serif'; ctx.fillText('🕶️', -12, headY + 5); }
+
+    // arms + bar: bar y goes from shoulder (down) to overhead (up)
+    const barYDown = headY - 26;
+    const barYUp = headY - 85;
+    const barY = barYDown + (barYUp - barYDown) * phase;
+    const shoulderX = torsoW / 2 + m * 14 - 4;
+    const handX = shoulderX + 18;
+    ctx.strokeStyle = skin; ctx.lineCap = 'round'; ctx.lineWidth = armW;
+    [-1, 1].forEach(side => {
+      const sx = side * shoulderX, sy = shoulderY + 6;
+      const hx = side * handX, hy = barY;
+      const ex = side * (shoulderX + 26 + m * 8 - phase * 14), ey = (sy + hy) / 2 + 10 * (1 - phase);
+      ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(ex, ey); ctx.lineTo(hx, hy); ctx.stroke();
+      if (m > 0.15) { // bicep bulge
+        ctx.fillStyle = skin; ctx.beginPath();
+        ctx.arc((sx + ex) / 2 + side * 3, (sy + ey) / 2, armW * 0.75, 0, Math.PI * 2); ctx.fill();
+      }
+    });
+
+    // barbell
+    const barHalf = handX + 50 + m * 20;
+    ctx.strokeStyle = '#c8c8d0'; ctx.lineWidth = 5;
+    ctx.beginPath(); ctx.moveTo(-barHalf, barY); ctx.lineTo(barHalf, barY); ctx.stroke();
+    const plates = Math.min(5, 1 + Math.floor(S.stage / 2));
+    for (let i = 0; i < plates; i++) {
+      const h = 46 - i * 5;
+      ctx.fillStyle = ['#222', '#d43c3c', '#2f6fd6', '#e8c72a', '#2fb36b'][i];
+      ctx.fillRect(-barHalf + 4 + i * 9, barY - h / 2, 8, h);
+      ctx.fillRect(barHalf - 12 - i * 9, barY - h / 2, 8, h);
+    }
+    // the object being lifted, sits on the middle of the bar
+    const st = STAGES[S.stage];
+    const objSize = 46 + S.stage * 6;
+    ctx.font = objSize + 'px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+    ctx.fillText(st.obj, 0, barY + 4);
+    ctx.textAlign = 'start'; ctx.textBaseline = 'alphabetic';
+
+    // sweat
+    if (S.combo > 1.5 && Math.random() < 0.3) {
+      particles.push({ x: cx + (Math.random() - 0.5) * 30 * scale, y: groundY + headY * scale, vx: (Math.random() - 0.5) * 3, vy: -2, life: 0.7, color: '#8fd3ff' });
+    }
+    ctx.restore();
+  }
+
+  function drawFx(dt) {
+    particles = particles.filter(p => p.life > 0);
+    particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy; p.vy += 0.25; p.life -= dt * 1.6;
+      ctx.globalAlpha = Math.max(0, p.life);
+      ctx.fillStyle = p.color; ctx.fillRect(p.x, p.y, 4, 4);
+    });
+    ctx.globalAlpha = 1;
+    floaters = floaters.filter(f => f.life > 0);
+    if (floaters.length > 40) floaters.splice(0, floaters.length - 40);
+    ctx.font = 'bold 20px system-ui'; ctx.textAlign = 'center';
+    floaters.forEach(f => {
+      f.y -= 60 * dt; f.life -= dt * 1.1;
+      ctx.globalAlpha = Math.max(0, f.life);
+      ctx.fillStyle = '#000'; ctx.fillText(f.text, f.x + 2, f.y + 2);
+      ctx.fillStyle = f.color; ctx.fillText(f.text, f.x, f.y);
+    });
+    ctx.globalAlpha = 1; ctx.textAlign = 'start';
+
+    if (meteor) {
+      meteor.x += meteor.vx * dt; meteor.y += meteor.vy * dt; meteor.life -= dt;
+      const W = canvas.width;
+      for (let i = 0; i < 8; i++) {
+        ctx.fillStyle = `rgba(255,${180 + i * 8},80,${0.5 - i * 0.06})`;
+        ctx.beginPath(); ctx.arc(meteor.x - meteor.vx * i * 0.03, meteor.y - meteor.vy * i * 0.03, 18 - i * 2, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.font = '44px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('⭐', meteor.x, meteor.y);
+      ctx.textAlign = 'start'; ctx.textBaseline = 'alphabetic';
+      if (meteor.life <= 0 || meteor.x > W + 60) { meteor = null; scheduleMeteor(); }
+    }
+
+    if (flash > 0) {
+      ctx.fillStyle = `rgba(255,255,255,${flash})`; ctx.fillRect(0, 0, canvas.width, canvas.height);
+      flash -= dt * 1.5;
+    }
+  }
+
+  // ---------- Main loop ----------
+  let last = performance.now();
+  let autoAcc = 0;
+  let uiTimer = 0, slowTimer = 0, saveTimer = 0;
+  function frame(now) {
+    const dt = Math.min(0.1, (now - last) / 1000);
+    last = now;
+
+    // Auto lifts (fractional accumulation; big numbers batch)
+    const al = autoLifts();
+    if (al > 0) {
+      autoAcc += al * dt;
+      if (autoAcc >= 1) {
+        const n = Math.floor(autoAcc);
+        autoAcc -= n;
+        gain(strPerLift() * n, moneyPerLift() * n);
+        S.reps += n;
+      }
+    }
+    // combo decay
+    if (now - S.lastLift > 700) S.combo = Math.max(1, S.combo - dt * 0.9);
+    // lift anim decay
+    liftAnim = Math.max(0, liftAnim - dt * 4);
+    // space-held lifting
+    if (spaceHeld && now - lastSpaceLift > 110) { lastSpaceLift = now; lift(true); }
+
+    // meteors
+    if (!meteor && now > nextMeteor) {
+      meteor = { x: -40, y: 60 + Math.random() * 150, vx: 90 + Math.random() * 60, vy: 15 + Math.random() * 20, life: 12 };
+      beep(1400, 0.15, 'sine', 0.05);
+    }
+
+    const groundY = drawBackground(now);
+    drawLifter(now, groundY);
+    drawFx(dt);
+
+    uiTimer += dt; slowTimer += dt; saveTimer += dt;
+    if (uiTimer > 0.1) { uiTimer = 0; refreshStats(); refreshTravel(); }
+    if (slowTimer > 0.5) {
+      const ddt = slowTimer; slowTimer = 0;
+      mpsAvg = mpsAvg * 0.6 + Math.max(0, (S.money - lastMoney) / ddt) * 0.4;
+      spsAvg = spsAvg * 0.6 + Math.max(0, (S.strength - lastStr) / ddt) * 0.4;
+      lastMoney = S.money; lastStr = S.strength;
+      refreshShop(); refreshAch(); refreshCosmic();
+    }
+    if (saveTimer > 5) { saveTimer = 0; save(); }
+    requestAnimationFrame(frame);
+  }
+
+  // ---------- Inputs ----------
+  let spaceHeld = false, lastSpaceLift = 0;
+  el('liftBtn').addEventListener('pointerdown', e => { e.preventDefault(); lift(true); });
+  el('liftBtn').addEventListener('keydown', e => { if (e.code === 'Space' || e.code === 'Enter') e.preventDefault(); });
+  window.addEventListener('keydown', e => {
+    if (e.code === 'Space') {
+      e.preventDefault();
+      if (!e.repeat) lift(true);
+      spaceHeld = true; lastSpaceLift = performance.now();
+    }
+  });
+  window.addEventListener('keyup', e => { if (e.code === 'Space') spaceHeld = false; });
+  window.addEventListener('blur', () => { spaceHeld = false; save(); });
+  window.addEventListener('beforeunload', save);
+
+  el('muteBtn').addEventListener('click', () => { S.muted = !S.muted; el('muteBtn').textContent = S.muted ? '🔇' : '🔊'; });
+  el('resetBtn').addEventListener('click', () => modal('Reset everything?', 'This wipes ALL progress, including Stardust and trophies.', [
+    { text: 'Wipe it', fn: () => { try { localStorage.removeItem(SAVE_KEY); } catch (e) {} S = freshRun(); buff = null; refreshAll(); } },
+    { text: 'Cancel', secondary: true },
+  ]));
+  const help = () => modal('💪 Swole to the Stars',
+    `Start in your mom's garage lifting soup cans. End up bench-pressing galaxies.<br><br>
+    🏋️ <b>Lift</b> to earn strength and money. Lift fast for a <b>combo</b> multiplier.<br>
+    🛒 <b>Buy upgrades</b>: more strength per lift, more cash, and helpers that lift for you.<br>
+    🚀 <b>Travel</b> to new places once you're strong enough. Each place pays way more.<br>
+    ⭐ <b>Click meteors</b> for big bonuses.<br>
+    🌌 Reach Andromeda to become <b>INTERGALACTIC</b>, then Big Bang for permanent Stardust.<br><br>
+    Progress auto-saves. Helpers keep lifting while you're away (up to 2 hours).`,
+    [{ text: 'Let\'s lift!' }]);
+  el('helpBtn').addEventListener('click', help);
+
+  // ---------- Boot ----------
+  if (!CanvasRenderingContext2D.prototype.roundRect) {
+    CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h) { this.rect(x, y, w, h); };
+  }
+  buildShop(); buildAch(); buildCosmic();
+  const hadSave = load();
+  el('muteBtn').textContent = S.muted ? '🔇' : '🔊';
+  if (hadSave) {
+    const away = Math.min(7200, (Date.now() - (S.lastSave || Date.now())) / 1000);
+    const al = autoLifts();
+    if (away > 30 && al > 0) {
+      const n = Math.floor(al * away);
+      const str = strPerLift() * n, mon = moneyPerLift() * n;
+      gain(str, mon); S.reps += n;
+      setTimeout(() => modal('😴 Welcome back!', `While you were gone your crew did <b>${fmt(n)}</b> reps.<br>+${fmt(str)} 💪 strength<br>+${$m(mon)}`, [{ text: 'Nice' }]), 300);
+    }
+  } else {
+    setTimeout(help, 300);
+  }
+  lastMoney = S.money; lastStr = S.strength;
+  refreshAll();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
