@@ -1,9 +1,0 @@
-Adds the Alchemist, a town NPC who sells potions.
-
-- Moves in after you defeat the Eater of Worlds or the Brain of Cthulhu.
-- Pre-Hardmode: Healing, Regeneration and Wormhole potions.
-- After the Wall of Flesh: 3 more potions.
-- After Plantera: combat potions.
-- After the Moon Lord: every potion.
-
-Calamity Mod is optional. When it is loaded, the Alchemist also sells Calamity potions as you progress.
