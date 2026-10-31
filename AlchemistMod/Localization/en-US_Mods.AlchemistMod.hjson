@@ -1,0 +1,29 @@
+NPCs: {
+	Alchemist: {
+		DisplayName: Alchemist
+
+		TownNPCMood: {
+			Content: I'm content. My potions are bubbling nicely.
+			NoHome: Where am I supposed to set up my cauldron? Out here?
+			FarFromHome: My lab is too far away. What if something boils over?
+			LoveSpace: Plenty of room for all my glassware. Wonderful!
+			DislikeCrowded: Too many people. Someone is going to knock over a flask.
+			HateCrowded: This is far too crowded! I can't brew like this!
+			LikeBiome: The {BiomeName} is full of useful ingredients.
+			DislikeBiome: The {BiomeName} is bad for my potions.
+			LoveNPC: "{NPCName} brings me the freshest herbs. I adore her work!"
+			LikeNPC: "{NPCName} understands the art of brewing."
+			DislikeNPC: "{NPCName} keeps setting off explosions near my glassware."
+			HateNPC: "{NPCName} keeps spilling dye into my potions!"
+		}
+	}
+}
+
+Bestiary: {
+	Alchemist: A wandering brewer who settles down once the world's evil has been beaten back. The stronger the foes you defeat, the more potions he can brew.
+}
+
+Conditions: {
+	DownedProvidence: After Providence has been defeated
+	DownedDoG: After The Devourer of Gods has been defeated
+}

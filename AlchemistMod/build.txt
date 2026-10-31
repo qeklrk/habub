@@ -1,0 +1,4 @@
+displayName = The Alchemist
+author = habub
+version = 1.0
+weakReferences = CalamityMod
