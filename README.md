@@ -32,6 +32,4 @@ Controls: **A/D** move · **Space/W** jump · **S** drop through platforms · **
 
 # 📍 TapTrail (iPhone app)
 
-Logs every Apple Pay tap with the exact time, the place (down to the actual store), the amount and the card you used. Swift/SwiftUI, iOS 17+.
-
-Open `taptrail/TapTrail.xcodeproj` in Xcode on a Mac. See [`taptrail/README.md`](taptrail/README.md) for setup, including the Shortcuts automation that feeds it purchases.
+Moved to its own repository: [qeklrk/taptrail](https://github.com/qeklrk/taptrail).
