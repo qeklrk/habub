@@ -1,0 +1,33 @@
+name: TapTrail iOS build
+
+on:
+  push:
+    paths:
+      - "taptrail/**"
+      - ".github/workflows/taptrail-ios.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: taptrail
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Xcode version
+        run: xcodebuild -version
+
+      - name: Amount parser checks
+        run: |
+          swiftc -target "$(uname -m)-apple-macos14" -o "$RUNNER_TEMP/amount-checks" \
+            TapTrail/Model/AmountParser.swift Tests/main.swift
+          "$RUNNER_TEMP/amount-checks"
+
+      - name: Build app for the iOS Simulator
+        run: |
+          xcodebuild -project TapTrail.xcodeproj -target TapTrail \
+            -sdk iphonesimulator -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO build

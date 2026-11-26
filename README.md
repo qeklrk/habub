@@ -27,3 +27,11 @@ Open `deepwild/index.html` in any browser. No install, no build. Works with keyb
 - Health upgrades (Vigor Roots), healing tonics, treasure pots, auto-save.
 
 Controls: **A/D** move · **Space/W** jump · **S** drop through platforms · **Left mouse** use the selected item (mine, swing, place, eat) · **1–0 / wheel** hotbar · **E** bag & crafting · **M** sound · **H** hints · **Esc** menu.
+
+---
+
+# 📍 TapTrail (iPhone app)
+
+Logs every Apple Pay tap with the exact time, the place (down to the actual store), the amount and the card you used. Swift/SwiftUI, iOS 17+.
+
+Open `taptrail/TapTrail.xcodeproj` in Xcode on a Mac. See [`taptrail/README.md`](taptrail/README.md) for setup, including the Shortcuts automation that feeds it purchases.
